@@ -8,7 +8,7 @@
 //
 
 #import "BEMSimpleLineGraphView.h"
-
+#import <QuartzCore/QuartzCore.h>
 const CGFloat BEMNullGraphValue = CGFLOAT_MAX;
 
 
@@ -151,7 +151,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
     _colorTop = [UIColor colorWithRed:0 green:122.0/255.0 blue:255/255 alpha:1];
     _colorLine = [UIColor colorWithRed:255.0/255.0 green:255.0/255.0 blue:255.0/255.0 alpha:1];
     _colorBottom = [UIColor colorWithRed:0 green:122.0/255.0 blue:255/255 alpha:1];
-    _colorPoint = [UIColor colorWithWhite:1.0 alpha:0.7];
+    _colorPoint = [UIColor whiteColor];
     _colorTouchInputLine = [UIColor grayColor];
     _colorBackgroundPopUplabel = [UIColor whiteColor];
     _alphaTouchInputLine = 0.2;
@@ -174,7 +174,6 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
     
     // Set Default Feature Values
     _enableTouchReport = NO;
-    _touchReportFingersRequired = 1;
     _enablePopUpReport = NO;
     _enableBezierCurve = NO;
     _enableXAxisLabel = YES;
@@ -197,7 +196,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
     dataPoints = [NSMutableArray array];
     xAxisLabels = [NSMutableArray array];
     yAxisValues = [NSMutableArray array];
-
+    
     // Initialize BEM Objects
     _averageLine = [[BEMAverageLine alloc] init];
 }
@@ -234,7 +233,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
         if ([self.delegate respondsToSelector:@selector(lineGraphDidFinishLoading:)])
             [self.delegate lineGraphDidFinishLoading:self];
     }
-
+    
 }
 
 - (void)layoutSubviews {
@@ -242,7 +241,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
     
     if (CGSizeEqualToSize(self.currentViewSize, self.bounds.size))  return;
     self.currentViewSize = self.bounds.size;
-
+    
     [self drawGraph];
 }
 
@@ -254,10 +253,10 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
     } else if ([self.delegate respondsToSelector:@selector(numberOfPointsInGraph)]) {
         [self printDeprecationWarningForOldMethod:@"numberOfPointsInGraph" andReplacementMethod:@"numberOfPointsInLineGraph:"];
         
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        numberOfPoints = [self.delegate numberOfPointsInGraph];
-#pragma clang diagnostic pop
+//#pragma clang diagnostic push
+//#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+//        numberOfPoints = [self.delegate numberOfPointsInGraph];
+//#pragma clang diagnostic pop
         
     } else if ([self.delegate respondsToSelector:@selector(numberOfPointsInLineGraph:)]) {
         [self printDeprecationAndUnavailableWarningForOldMethod:@"numberOfPointsInLineGraph:"];
@@ -270,7 +269,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
         if (self.delegate &&
             [self.delegate respondsToSelector:@selector(noDataLabelEnableForLineGraph:)] &&
             ![self.delegate noDataLabelEnableForLineGraph:self]) return;
-
+        
         NSLog(@"[BEMSimpleLineGraph] Data source contains no data. A no data label will be displayed and drawing will stop. Add data to the data source and then reload the graph.");
         
 #if !TARGET_INTERFACE_BUILDER
@@ -281,7 +280,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
         
         self.noDataLabel.backgroundColor = [UIColor clearColor];
         self.noDataLabel.textAlignment = NSTextAlignmentCenter;
-
+        
 #if !TARGET_INTERFACE_BUILDER
         NSString *noDataText;
         if ([self.delegate respondsToSelector:@selector(noDataLabelTextForLineGraph:)]) {
@@ -293,7 +292,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
 #endif
         self.noDataLabel.font = self.noDataLabelFont ?: [UIFont fontWithName:@"HelveticaNeue-Light" size:15];
         self.noDataLabel.textColor = self.noDataLabelColor ?: self.colorLine;
-
+        
         [self.viewForBaselineLayout addSubview:self.noDataLabel];
         
         // Let the delegate know that the graph finished layout updates
@@ -380,7 +379,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
                 [self.popUpLabel sizeToFit];
                 self.popUpLabel.alpha = 0;
                 
-                self.popUpView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.popUpLabel.frame.size.width + 10, self.popUpLabel.frame.size.height + 2)];
+                self.popUpView = [[UIView alloc] initWithFrame:CGRectMake(0, 10, self.popUpLabel.frame.size.width + 10, self.popUpLabel.frame.size.height + 2)];
                 self.popUpView.backgroundColor = self.colorBackgroundPopUplabel;
                 self.popUpView.alpha = 0;
                 self.popUpView.layer.cornerRadius = 3;
@@ -443,19 +442,19 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
             NSString *mString = [longestString stringByReplacingOccurrencesOfString:@"[0-9-]" withString:@"N" options:NSRegularExpressionSearch range:NSMakeRange(0, [longestString length])];
             NSString *fullString = [NSString stringWithFormat:@"%@%@%@", prefix, mString, suffix];
             self.YAxisLabelXOffset = [fullString sizeWithAttributes:attributes].width + 2;//MAX([maxValueString sizeWithAttributes:attributes].width + 10,
-                                     //    [minValueString sizeWithAttributes:attributes].width) + 5;
+            //    [minValueString sizeWithAttributes:attributes].width) + 5;
         } else {
             NSString *longestString = [NSString stringWithFormat:@"%i", (int)self.frame.size.height];
             self.YAxisLabelXOffset = [longestString sizeWithAttributes:attributes].width + 5;
         }
     } else self.YAxisLabelXOffset = 0;
-
+    
     // Draw the X-Axis
     [self drawXAxis];
-
+    
     // Draw the graph
     [self drawDots];
-
+    
     // Draw the Y-Axis
     if (self.enableYAxisLabel) [self drawYAxis];
 }
@@ -488,10 +487,10 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
             } else if ([self.delegate respondsToSelector:@selector(valueForIndex:)]) {
                 [self printDeprecationWarningForOldMethod:@"valueForIndex:" andReplacementMethod:@"lineGraph:valueForPointAtIndex:"];
                 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-                dotValue = [self.delegate valueForIndex:i];
-#pragma clang diagnostic pop
+//#pragma clang diagnostic push
+//#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+//                dotValue = [self.delegate valueForIndex:i];
+//#pragma clang diagnostic pop
                 
             } else if ([self.delegate respondsToSelector:@selector(lineGraph:valueForPointAtIndex:)]) {
                 [self printDeprecationAndUnavailableWarningForOldMethod:@"lineGraph:valueForPointAtIndex:"];
@@ -540,12 +539,13 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
                     if (self.displayDotsOnly == YES) circleDot.alpha = 1.0;
                     else {
                         if (self.alwaysDisplayDots == NO) circleDot.alpha = 0;
-                        else circleDot.alpha = 1.0;
+                        else circleDot.alpha = 0.7;
                     }
                 } else {
                     if (self.displayDotsWhileAnimating) {
                         [UIView animateWithDuration:(float)self.animationGraphEntranceTime/numberOfPoints delay:(float)i*((float)self.animationGraphEntranceTime/numberOfPoints) options:UIViewAnimationOptionCurveLinear animations:^{
-                            circleDot.alpha = 1.0;
+                            if (self.displayDotsOnly == YES) circleDot.alpha = 1.0;
+                            else circleDot.alpha = 0.7;
                         } completion:^(BOOL finished) {
                             if (self.alwaysDisplayDots == NO && self.displayDotsOnly == NO) {
                                 [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
@@ -611,7 +611,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
     line.animationType = self.animationGraphStyle;
     
     if (self.averageLine.enableAverageLine == YES) {
-        if (self.averageLine.yValue == 0.0) self.averageLine.yValue = [self calculatePointValueAverage].floatValue;
+        self.averageLine.yValue = [self calculatePointValueAverage].floatValue;
         line.averageLineYCoordinate = [self yPositionForDotValue:self.averageLine.yValue];
         line.averageLine = self.averageLine;
     } else line.averageLine = self.averageLine;
@@ -702,10 +702,10 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
         } else if ([self.delegate respondsToSelector:@selector(numberOfGapsBetweenLabels)]) {
             [self printDeprecationWarningForOldMethod:@"numberOfGapsBetweenLabels" andReplacementMethod:@"numberOfGapsBetweenLabelsOnLineGraph:"];
             
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-            numberOfGaps = [self.delegate numberOfGapsBetweenLabels] + 1;
-#pragma clang diagnostic pop
+//#pragma clang diagnostic push
+//#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+//            numberOfGaps = [self.delegate numberOfGapsBetweenLabels] + 1;
+//#pragma clang diagnostic pop
             
         } else {
             numberOfGaps = 1;
@@ -811,10 +811,10 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
     } else if ([self.delegate respondsToSelector:@selector(labelOnXAxisForIndex:)]) {
         [self printDeprecationWarningForOldMethod:@"labelOnXAxisForIndex:" andReplacementMethod:@"lineGraph:labelOnXAxisForIndex:"];
         
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        xAxisLabelText = [self.delegate labelOnXAxisForIndex:index];
-#pragma clang diagnostic pop
+//#pragma clang diagnostic push
+//#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+//        xAxisLabelText = [self.delegate labelOnXAxisForIndex:index];
+//#pragma clang diagnostic pop
         
     } else if ([self.delegate respondsToSelector:@selector(lineGraph:labelOnXAxisForIndex:)]) {
         [self printDeprecationAndUnavailableWarningForOldMethod:@"lineGraph:labelOnXAxisForIndex:"];
@@ -844,11 +844,11 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
     CGPoint center;
     
     /* OLD LABEL GENERATION CODE
-    CGFloat availablePositionRoom = self.viewForBaselineLayout.frame.size.width; // Get view width of view
-    CGFloat positioningDivisor = (float)index / numberOfPoints; // Generate relative position of point based on current index and total
-    CGFloat horizontalTranslation = self.YAxisLabelXOffset + lRect.size.width;
-    CGFloat xPosition = (availablePositionRoom * positioningDivisor) + horizontalTranslation;
-    // NSLog(@"availablePositionRoom: %f, positioningDivisor: %f, horizontalTranslation: %f, xPosition: %f", availablePositionRoom, positioningDivisor, horizontalTranslation, xPosition); // Uncomment for debugging */
+     CGFloat availablePositionRoom = self.viewForBaselineLayout.frame.size.width; // Get view width of view
+     CGFloat positioningDivisor = (float)index / numberOfPoints; // Generate relative position of point based on current index and total
+     CGFloat horizontalTranslation = self.YAxisLabelXOffset + lRect.size.width;
+     CGFloat xPosition = (availablePositionRoom * positioningDivisor) + horizontalTranslation;
+     // NSLog(@"availablePositionRoom: %f, positioningDivisor: %f, horizontalTranslation: %f, xPosition: %f", availablePositionRoom, positioningDivisor, horizontalTranslation, xPosition); // Uncomment for debugging */
     
     // Determine the horizontal translation to perform on the far left and far right labels
     // This property is negated when calculating the position of reference frames
@@ -928,7 +928,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
         // Plot according to min-max range
         NSNumber *minimumValue;
         NSNumber *maximumValue;
-
+        
         minimumValue = [self calculateMinimumPointValue];
         maximumValue = [self calculateMaximumPointValue];
         
@@ -1038,12 +1038,12 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
         [label removeFromSuperview];
     }
     
-    [self didFinishDrawingIncludingYAxis:YES];  
+    [self didFinishDrawingIncludingYAxis:YES];
 }
 
 /// Area on the graph that doesn't include the axes
 - (CGRect)drawableGraphArea {
-//  CGRectMake(xAxisXPositionFirstOffset, self.frame.size.height-20, viewWidth/2, 20);
+    //  CGRectMake(xAxisXPositionFirstOffset, self.frame.size.height-20, viewWidth/2, 20);
     NSInteger xAxisHeight = 20;
     CGFloat xOrigin = self.positionYAxisRight ? 0 : self.YAxisLabelXOffset;
     CGFloat viewWidth = self.frame.size.width - self.YAxisLabelXOffset;
@@ -1091,10 +1091,10 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
     
     if ([self.delegate respondsToSelector:@selector(popUpSuffixForlineGraph:)])
         suffix = [self.delegate popUpSuffixForlineGraph:self];
-
+    
     if ([self.delegate respondsToSelector:@selector(popUpPrefixForlineGraph:)])
         prefix = [self.delegate popUpPrefixForlineGraph:self];
-
+    
     int index = (int)(circleDot.tag - DotFirstTag100);
     NSNumber *value = dataPoints[index]; // @((NSInteger) circleDot.absoluteValue)
     NSString *formattedValue = [NSString stringWithFormat:self.formatStringForValues, value.doubleValue];
@@ -1183,7 +1183,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
         [subviews removeFromSuperview];
     }
     [self drawGraph];
-//    [self setNeedsLayout];
+    
 }
 
 #pragma mark - Calculations
@@ -1200,7 +1200,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
 
 - (NSNumber *)calculatePointValueAverage {
     NSArray *filteredArray = [self calculationDataPoints];
-    if (filteredArray.count == 0) return [NSNumber numberWithInt:0];
+    if (filteredArray.count == 0) return 0;
     
     NSExpression *expression = [NSExpression expressionForFunction:@"average:" arguments:@[[NSExpression expressionForConstantValue:filteredArray]]];
     NSNumber *value = [expression expressionValueWithObject:nil context:nil];
@@ -1210,7 +1210,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
 
 - (NSNumber *)calculatePointValueSum {
     NSArray *filteredArray = [self calculationDataPoints];
-    if (filteredArray.count == 0) return [NSNumber numberWithInt:0];
+    if (filteredArray.count == 0) return 0;
     
     NSExpression *expression = [NSExpression expressionForFunction:@"sum:" arguments:@[[NSExpression expressionForConstantValue:filteredArray]]];
     NSNumber *value = [expression expressionValueWithObject:nil context:nil];
@@ -1220,7 +1220,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
 
 - (NSNumber *)calculatePointValueMedian {
     NSArray *filteredArray = [self calculationDataPoints];
-    if (filteredArray.count == 0) return [NSNumber numberWithInt:0];
+    if (filteredArray.count == 0) return 0;
     
     NSExpression *expression = [NSExpression expressionForFunction:@"median:" arguments:@[[NSExpression expressionForConstantValue:filteredArray]]];
     NSNumber *value = [expression expressionValueWithObject:nil context:nil];
@@ -1230,7 +1230,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
 
 - (NSNumber *)calculatePointValueMode {
     NSArray *filteredArray = [self calculationDataPoints];
-    if (filteredArray.count == 0) return [NSNumber numberWithInt:0];
+    if (filteredArray.count == 0) return 0;
     
     NSExpression *expression = [NSExpression expressionForFunction:@"mode:" arguments:@[[NSExpression expressionForConstantValue:filteredArray]]];
     NSMutableArray *value = [expression expressionValueWithObject:nil context:nil];
@@ -1240,7 +1240,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
 
 - (NSNumber *)calculateLineGraphStandardDeviation {
     NSArray *filteredArray = [self calculationDataPoints];
-    if (filteredArray.count == 0) return [NSNumber numberWithInt:0];
+    if (filteredArray.count == 0) return 0;
     
     NSExpression *expression = [NSExpression expressionForFunction:@"stddev:" arguments:@[[NSExpression expressionForConstantValue:filteredArray]]];
     NSNumber *value = [expression expressionValueWithObject:nil context:nil];
@@ -1250,7 +1250,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
 
 - (NSNumber *)calculateMinimumPointValue {
     NSArray *filteredArray = [self calculationDataPoints];
-    if (filteredArray.count == 0) return [NSNumber numberWithInt:0];
+    if (filteredArray.count == 0) return 0;
     
     NSExpression *expression = [NSExpression expressionForFunction:@"min:" arguments:@[[NSExpression expressionForConstantValue:filteredArray]]];
     NSNumber *value = [expression expressionValueWithObject:nil context:nil];
@@ -1259,7 +1259,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
 
 - (NSNumber *)calculateMaximumPointValue {
     NSArray *filteredArray = [self calculationDataPoints];
-    if (filteredArray.count == 0) return [NSNumber numberWithInt:0];
+    if (filteredArray.count == 0) return 0;
     
     NSExpression *expression = [NSExpression expressionForFunction:@"max:" arguments:@[[NSExpression expressionForConstantValue:filteredArray]]];
     NSNumber *value = [expression expressionValueWithObject:nil context:nil];
@@ -1293,7 +1293,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
     if ([gestureRecognizer isEqual:self.panGesture]) {
-        if (gestureRecognizer.numberOfTouches >= self.touchReportFingersRequired) {
+        if (gestureRecognizer.numberOfTouches > 0) {
             CGPoint translation = [self.panGesture velocityInView:self.panView];
             return fabs(translation.y) < fabs(translation.x);
         } else return NO;
@@ -1301,13 +1301,13 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
     } else return NO;
 }
 
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
-	    return YES;
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer{
+    return YES;
+}
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch{
+    return YES;
 }
 
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
-	    return YES;
-}
 
 - (void)handleGestureAction:(UIGestureRecognizer *)recognizer {
     CGPoint translation = [recognizer locationInView:self.viewForBaselineLayout];
@@ -1321,10 +1321,18 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
     closestDot = [self closestDotFromtouchInputLine:self.touchInputLine];
     closestDot.alpha = 0.8;
     
+    [self bringSubviewToFront:closestDot];
+    CGRect frame = self.touchInputLine.frame;
+    frame.origin.x = closestDot.center.x - self.widthTouchInputLine/2;
+    self.touchInputLine.frame = frame;
     
-    if (self.enablePopUpReport == YES && closestDot.tag >= DotFirstTag100 && closestDot.tag < DotLastTag1000 && [closestDot isKindOfClass:[BEMCircle class]] && self.alwaysDisplayPopUpLabels == NO) {
-        [self setUpPopUpLabelAbovePoint:closestDot];
-    }
+    // on my own method
+    [self setPopUpViewOnTouchPoint:translation];
+    
+    // relace on myown
+    //    if (self.enablePopUpReport == YES && closestDot.tag >= DotFirstTag100 && closestDot.tag < DotLastTag1000 && [closestDot isKindOfClass:[BEMCircle class]] && self.alwaysDisplayPopUpLabels == NO) {
+    //        [self setUpPopUpLabelAbovePoint:closestDot];
+    //    }
     
     if (closestDot.tag >= DotFirstTag100 && closestDot.tag < DotLastTag1000 && [closestDot isMemberOfClass:[BEMCircle class]]) {
         if ([self.delegate respondsToSelector:@selector(lineGraph:didTouchGraphWithClosestIndex:)] && self.enableTouchReport == YES) {
@@ -1333,10 +1341,10 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
         } else if ([self.delegate respondsToSelector:@selector(didTouchGraphWithClosestIndex:)] && self.enableTouchReport == YES) {
             [self printDeprecationWarningForOldMethod:@"didTouchGraphWithClosestIndex:" andReplacementMethod:@"lineGraph:didTouchGraphWithClosestIndex:"];
             
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-            [self.delegate didTouchGraphWithClosestIndex:((int)closestDot.tag - DotFirstTag100)];
-#pragma clang diagnostic pop
+//#pragma clang diagnostic push
+//#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+//            [self.delegate didTouchGraphWithClosestIndex:((int)closestDot.tag - DotFirstTag100)];
+//#pragma clang diagnostic pop
         }
     }
     
@@ -1348,10 +1356,10 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
         } else if ([self.delegate respondsToSelector:@selector(didReleaseGraphWithClosestIndex:)]) {
             [self printDeprecationWarningForOldMethod:@"didReleaseGraphWithClosestIndex:" andReplacementMethod:@"lineGraph:didReleaseTouchFromGraphWithClosestIndex:"];
             
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-            [self.delegate didReleaseGraphWithClosestIndex:(closestDot.tag - DotFirstTag100)];
-#pragma clang diagnostic pop
+//#pragma clang diagnostic push
+//#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+//            [self.delegate didReleaseGraphWithClosestIndex:(closestDot.tag - DotFirstTag100)];
+//#pragma clang diagnostic pop
         }
         
         [UIView animateWithDuration:0.2 delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
@@ -1363,7 +1371,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
             if (self.enablePopUpReport == YES) {
                 self.popUpView.alpha = 0;
                 self.popUpLabel.alpha = 0;
-//                self.customPopUpView.alpha = 0;
+                //                self.customPopUpView.alpha = 0;
             }
         } completion:nil];
     }
@@ -1373,20 +1381,52 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
     return sqrt(pow(closestDot.center.x - self.touchInputLine.center.x, 2));
 }
 
+# pragma on my own method
+-(void)setPopUpViewOnTouchPoint:(CGPoint)point{
+    
+    self.popUpView.center = CGPointMake(point.x, 60);
+    self.popUpView.alpha = 1.0;
+    self.xCenterLabel = point.x;
+    
+    CGPoint popUpViewCenter = CGPointZero;
+    
+    if (self.enableYAxisLabel == YES && self.popUpView.frame.origin.x <= self.YAxisLabelXOffset && !self.positionYAxisRight) {
+        self.xCenterLabel = self.popUpView.frame.size.width/2;
+        popUpViewCenter = CGPointMake(self.xCenterLabel + self.YAxisLabelXOffset + 1, 60);
+    } else if ((self.popUpView.frame.origin.x + self.popUpView.frame.size.width) >= self.frame.size.width - self.YAxisLabelXOffset && self.positionYAxisRight) {
+        self.xCenterLabel = self.frame.size.width - self.popUpView.frame.size.width/2;
+        popUpViewCenter = CGPointMake(self.xCenterLabel - self.YAxisLabelXOffset, 60);
+    } else if (self.popUpView.frame.origin.x <= 0) {
+        self.xCenterLabel = self.popUpView.frame.size.width/2;
+        popUpViewCenter = CGPointMake(self.xCenterLabel, 60);
+    } else if ((self.popUpView.frame.origin.x + self.popUpView.frame.size.width) >= self.frame.size.width) {
+        self.xCenterLabel = self.frame.size.width - self.popUpView.frame.size.width/2;
+        popUpViewCenter = CGPointMake(self.xCenterLabel, 60);
+    }
+    
+    if (self.popUpView.frame.origin.y <= 2) {
+        self.yCenterLabel = closestDot.center.y + closestDot.frame.size.height/2 + 15;
+        popUpViewCenter = CGPointMake(self.xCenterLabel, 60);
+    }
+    if (!CGPointEqualToPoint(popUpViewCenter, CGPointZero)) {
+        self.popUpView.center = popUpViewCenter;
+    }
+}
+
 - (void)setUpPopUpLabelAbovePoint:(BEMCircle *)closestPoint {
     self.xCenterLabel = closestDot.center.x;
     self.yCenterLabel = closestDot.center.y - closestDot.frame.size.height/2 - 15;
     self.popUpView.center = CGPointMake(self.xCenterLabel, self.yCenterLabel);
     self.popUpLabel.center = self.popUpView.center;
     int index = (int)(closestDot.tag - DotFirstTag100);
-
+    
     if ([self.delegate respondsToSelector:@selector(lineGraph:modifyPopupView:forIndex:)]) {
         [self.delegate lineGraph:self modifyPopupView:self.popUpView forIndex:index];
     }
     self.xCenterLabel = closestDot.center.x;
     self.yCenterLabel = closestDot.center.y - closestDot.frame.size.height/2 - 15;
     self.popUpView.center = CGPointMake(self.xCenterLabel, self.yCenterLabel);
-
+    
     self.popUpView.alpha = 1.0;
     
     CGPoint popUpViewCenter = CGPointZero;
@@ -1414,7 +1454,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
         self.yCenterLabel = closestDot.center.y + closestDot.frame.size.height/2 + 15;
         popUpViewCenter = CGPointMake(self.xCenterLabel, closestDot.center.y + closestDot.frame.size.height/2 + 15);
     }
-
+    
     if (!CGPointEqualToPoint(popUpViewCenter, CGPointZero)) {
         self.popUpView.center = popUpViewCenter;
     }
@@ -1472,10 +1512,10 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
                 } else if ([self.delegate respondsToSelector:@selector(valueForIndex:)]) {
                     [self printDeprecationWarningForOldMethod:@"valueForIndex:" andReplacementMethod:@"lineGraph:valueForPointAtIndex:"];
                     
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-                    dotValue = [self.delegate valueForIndex:i];
-#pragma clang diagnostic pop
+//#pragma clang diagnostic push
+//#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+//                    dotValue = [self.delegate valueForIndex:i];
+//#pragma clang diagnostic pop
                     
                 } else if ([self.delegate respondsToSelector:@selector(lineGraph:valueForPointAtIndex:)]) {
                     [self printDeprecationAndUnavailableWarningForOldMethod:@"lineGraph:valueForPointAtIndex:"];
@@ -1513,10 +1553,10 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
                 } else if ([self.delegate respondsToSelector:@selector(valueForIndex:)]) {
                     [self printDeprecationWarningForOldMethod:@"valueForIndex:" andReplacementMethod:@"lineGraph:valueForPointAtIndex:"];
                     
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-                    dotValue = [self.delegate valueForIndex:i];
-#pragma clang diagnostic pop
+//#pragma clang diagnostic push
+//#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+//                    dotValue = [self.delegate valueForIndex:i];
+//#pragma clang diagnostic pop
                     
                 } else if ([self.delegate respondsToSelector:@selector(lineGraph:valueForPointAtIndex:)]) {
                     [self printDeprecationAndUnavailableWarningForOldMethod:@"lineGraph:valueForPointAtIndex:"];
@@ -1547,10 +1587,10 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
     if (padding > 90.0) {
         padding = 90.0;
     }
-
+    
     if ([self.delegate respondsToSelector:@selector(staticPaddingForLineGraph:)])
         padding = [self.delegate staticPaddingForLineGraph:self];
-
+    
     if (self.enableXAxisLabel) {
         if ([self.dataSource respondsToSelector:@selector(lineGraph:labelOnXAxisForIndex:)] || [self.dataSource respondsToSelector:@selector(labelOnXAxisForIndex:)]) {
             if ([xAxisLabels count] > 0) {
@@ -1583,6 +1623,82 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
 
 - (void)printDeprecationWarningForOldMethod:(NSString *)oldMethod andReplacementMethod:(NSString *)replacementMethod {
     NSLog(@"[BEMSimpleLineGraph] DEPRECATION WARNING. The delegate method, %@, is deprecated and will become unavailable in a future version. Use %@ instead. Update your delegate method as soon as possible. An exception will be thrown in a future version.", oldMethod, replacementMethod);
+}
+
+#pragma mark - xcurrency method
+-(void)showDotViewAtIndex:(NSInteger)index{
+    for (UIView *subview in [self subviews]) {
+        if ([subview isKindOfClass:[BEMCircle class]]){
+            BEMCircle *dotView = (BEMCircle *)subview;
+            int dotindex = (int)(dotView.tag - DotFirstTag100);
+            if ([dataPoints count] > index && dotindex == index && [dataPoints[dotindex] doubleValue] == [dataPoints[index] doubleValue]) {
+                dotView.alpha = 1;
+                //                dotView.layer.borderWidth = 2;
+                //                dotView.layer.borderColor = self.colorLine.CGColor;
+                //                dotView.layer.cornerRadius = 5;
+                //                dotView.layer.masksToBounds = YES;
+                [self bringSubviewToFront:dotView];
+                CGPoint center = dotView.center;
+                self.touchInputLine.alpha = self.alphaTouchInputLine;
+                
+                self.touchInputLine.backgroundColor = [UIColor clearColor];
+                
+                [self setPopUpViewOnTouchPoint:center];
+                
+                [UIView animateWithDuration:0.15 delay:1 options:UIViewAnimationOptionCurveEaseOut animations:^{
+                    dotView.alpha = 0;
+                    self.touchInputLine.alpha = 0;
+                    self.popUpView.alpha = 0;
+                } completion:^(BOOL finished) {
+                    
+                }];
+                break;
+            }
+        }
+        
+    }
+}
+
+-(void)hideTouchLineView{
+    for (UIView *subview in [self subviews]) {
+        if ([subview isKindOfClass:[BEMCircle class]]){
+            subview.alpha = 0;
+        }
+    }
+    self.touchInputLine.alpha = 0;
+    self.popUpView.alpha = 0;
+}
+
+-(void)showHighLowPoint{
+    // avoid to draw many same point
+    int minCount = 0;
+    int maxCount = 0;
+    for (UIView *subview in [self subviews]) {
+        if ([subview isKindOfClass:[BEMCircle class]]){
+            BEMCircle *dotView = (BEMCircle *)subview;
+            float min = [[self calculateMinimumPointValue] floatValue];
+            float max = [[self calculateMaximumPointValue] floatValue];
+            BOOL needPoint = NO;
+            if (dotView.absoluteValue == min && minCount == 0) {
+                minCount++;
+                needPoint = YES;
+            }
+            if ( dotView.absoluteValue == max && maxCount == 0) {
+                maxCount++;
+                needPoint = YES;
+            }
+            if (needPoint) {
+                UIView *pointView = [UIView new];
+                pointView.bounds = CGRectMake(0, 0, 6, 6);
+                pointView.center = dotView.center;
+                pointView.layer.masksToBounds = YES;
+                pointView.layer.cornerRadius = 3;
+                pointView.backgroundColor = [UIColor colorWithRed:255.0/255.0 green:221.0/255.0 blue:122.0/255 alpha:1.0f];
+                [self addSubview:pointView];
+            }
+        }
+        
+    }
 }
 
 @end
