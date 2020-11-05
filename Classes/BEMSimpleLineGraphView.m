@@ -1693,7 +1693,13 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
                 pointView.center = dotView.center;
                 pointView.layer.masksToBounds = YES;
                 pointView.layer.cornerRadius = 3;
-                pointView.backgroundColor = [UIColor colorWithRed:255.0/255.0 green:221.0/255.0 blue:122.0/255 alpha:1.0f];
+                pointView.layer.borderWidth = 2;
+                
+                [pointView.traitCollection performAsCurrentTraitCollection:^{
+                    pointView.layer.borderColor = [_highLowbackgroundColor CGColor];
+                }];
+                
+                pointView.backgroundColor = self.colorLine;
                 [self addSubview:pointView];
             }
         }
