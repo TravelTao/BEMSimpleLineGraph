@@ -1689,14 +1689,23 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
             }
             if (needPoint) {
                 UIView *pointView = [UIView new];
-                pointView.bounds = CGRectMake(0, 0, 10, 10);
-                pointView.center = dotView.center;
+                UIView * backView = [UIView new];
+                
+                
+                backView.bounds = CGRectMake(0, 0, 10, 10);
+                backView.center = dotView.center;
+                backView.backgroundColor = self.highLowbackgroundColor;
+                backView.layer.masksToBounds = YES;
+                backView.layer.cornerRadius = 5;
+                
+                pointView.bounds = CGRectMake(0, 0, 6, 6);
+                pointView.center = backView.center;
                 pointView.layer.masksToBounds = YES;
-                pointView.layer.cornerRadius = 5;
-                pointView.layer.borderWidth = 2;
-                pointView.layer.borderColor = [self.highLowbackgroundColor CGColor];
+                pointView.layer.cornerRadius = 3;
                 pointView.backgroundColor = self.colorLine;
-                [self addSubview:pointView];
+                [backView addSubview:pointView];
+
+                [self addSubview:backView];
             }
         }
         
