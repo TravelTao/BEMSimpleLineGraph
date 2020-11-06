@@ -1689,10 +1689,10 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
             }
             if (needPoint) {
                 UIView *pointView = [UIView new];
-                pointView.bounds = CGRectMake(0, 0, 6, 6);
+                pointView.bounds = CGRectMake(0, 0, 10, 10);
                 pointView.center = dotView.center;
                 pointView.layer.masksToBounds = YES;
-                pointView.layer.cornerRadius = 3;
+                pointView.layer.cornerRadius = 5;
                 pointView.layer.borderWidth = 2;
                 
                 [pointView.traitCollection performAsCurrentTraitCollection:^{
