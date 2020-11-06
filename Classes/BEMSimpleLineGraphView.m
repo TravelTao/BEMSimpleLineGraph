@@ -1692,17 +1692,18 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
                 UIView * backView = [UIView new];
                 
                 
-                backView.bounds = CGRectMake(0, 0, 10, 10);
+                backView.frame = CGRectMake(0, 0, 10, 10);
                 backView.center = dotView.center;
                 backView.backgroundColor = self.highLowbackgroundColor;
                 backView.layer.masksToBounds = YES;
                 backView.layer.cornerRadius = 5;
                 
-                pointView.bounds = CGRectMake(0, 0, 6, 6);
-                pointView.center = backView.center;
+                pointView.frame = CGRectMake(2, 2, 6, 6);
+                
                 pointView.layer.masksToBounds = YES;
                 pointView.layer.cornerRadius = 3;
                 pointView.backgroundColor = self.colorLine;
+                
                 [backView addSubview:pointView];
 
                 [self addSubview:backView];
