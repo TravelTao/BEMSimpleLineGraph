@@ -1694,11 +1694,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
                 pointView.layer.masksToBounds = YES;
                 pointView.layer.cornerRadius = 5;
                 pointView.layer.borderWidth = 2;
-                
-                [pointView.traitCollection performAsCurrentTraitCollection:^{
-                    pointView.layer.borderColor = [_highLowbackgroundColor CGColor];
-                }];
-                
+                pointView.layer.borderColor = [self.highLowbackgroundColor CGColor];
                 pointView.backgroundColor = self.colorLine;
                 [self addSubview:pointView];
             }
